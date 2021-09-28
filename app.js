@@ -58,7 +58,7 @@ app.get("/", (req,res) => {
     }); 
 });
 
-app.get("/:customList", (req, res) => {
+app.get("/list/:customList", (req, res) => {
     const customList = _.capitalize(req.params.customList);
 
     List.findOne({name: customList}, (err, foundList) => {
