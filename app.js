@@ -1,6 +1,7 @@
 const express = require("express"); 
 const bodyParser = require("body-parser"); 
 const mongoose = require("mongoose"); 
+const _ = require("lodash");
 
 const app = express(); 
 
@@ -9,7 +10,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.static("public")); 
 
 // DB 
-mongoose.connect("mongodb://localhost:27017/todolistDB"); 
+mongoose.connect("mongodb+srv://fredrik-andersson:mongodb-password@cluster0.2ozuf.mongodb.net/todolistDB"); 
 
 const itemSchema = new mongoose.Schema({
     name: String
@@ -18,22 +19,27 @@ const itemSchema = new mongoose.Schema({
 const Item = mongoose.model("Item", itemSchema); 
 
 const item1 = new Item({
-    name: "make coffe"
+    name: "New to do list!"
 });
 
 const item2 = new Item({
-    name: "Buy milk"
+    name: "Add new item +"
 }); 
 
 const item3 = new Item({
-    name: "Bake cookies"
+    name: "<-- delete item"
 });
 
 const defaultItems = [item1, item2, item3]; 
 
+const listSchema = new mongoose.Schema({
+    name: String,
+    items: [itemSchema]
+});
 
+const List = mongoose.model("List", listSchema);
 
-// GET 
+// GET READ
 app.get("/", (req,res) => {
 
     Item.find({}, (err, foundItems) => {
@@ -52,37 +58,68 @@ app.get("/", (req,res) => {
     }); 
 });
 
+app.get("/:customList", (req, res) => {
+    const customList = _.capitalize(req.params.customList);
 
-app.get("/work", (req, res) => {
-    res.render("list", {listTitle: "Work List", newListItems: workItems});
+    List.findOne({name: customList}, (err, foundList) => {
+        if (!err) {
+            if (!foundList) {
+                const list = new List({
+                    name: customList,
+                    items: defaultItems
+                });
+                list.save();
+                res.redirect("/" + customList);
+            } else {
+                res.render("list", {listTitle: foundList.name, newListItems: foundList.items});    
+            }
+        } else {
+            console.log(err);
+        }
+    });
 });
 
-app.get("/about", (req,res) => {
-    res.render("about");
-});
 
 // POST SAVE ITEM TO 
 app.post("/", (req, res) => {
-
     const itemName = req.body.newItem; 
+    const listName = req.body.list; 
 
     const item = new Item({
         name: itemName
     });
 
-    Item.create(item);
-    res.redirect("/");
+    if (listName === "Today") {
+        Item.create(item);
+        res.redirect("/");
+    } else {
+        List.findOne({name: listName}, (err, foundList) => {
+            foundList.items.push(item); 
+            foundList.save(); 
+            res.redirect("/" + listName);
+        });
+    }
 });
 
+
+// DELETE ITEM 
 app.post("/delete", (req, res) => {
     const itemId = req.body.checkbox; 
+    const listName = req.body.listName;
 
-    Item.deleteOners({_id: itemId}, (err) => {
-        if (!err) {
-            res.redirect("/");
-        }
-    }); 
-
+    if (listName === "Today") {
+        Item.deleteOne({_id: itemId}, (err) => {
+            if (!err) {
+                res.redirect("/");
+            }
+        });    
+    } else {
+        List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: itemId}}}, (err, foudList) => {
+            if (!err) {
+                res.redirect("/" + listName);
+            }
+        });
+    } 
 });
 
 
