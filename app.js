@@ -1,5 +1,4 @@
 const express = require("express"); 
-const bodyParser = require("body-parser"); 
 const mongoose = require("mongoose"); 
 const _ = require("lodash");
 
@@ -125,15 +124,15 @@ app.post("/delete", (req, res) => {
 
 
 // RUN SERVER  
-let port = process.env.PORT;
-if (port == null || port == "") {
-  port = 3000;
-}
-app.listen(port);
+// let port = process.env.PORT;
+// if (port == null || port == "") {
+//   port = 3000;
+// }
+// app.listen(port);
 
-app.listen(port, () => {
-    console.log("Server has started succesfully"); 
-});
+// app.listen(port, () => {
+//     console.log("Server has started succesfully"); 
+// });
 
 const PORT = process.env.PORT || 3000;
 
