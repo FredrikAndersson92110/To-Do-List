@@ -134,3 +134,8 @@ app.listen(port);
 app.listen(port, () => {
     console.log("Server has started succesfully"); 
 });
+
+const PORT = process.env.PORT || 3000;
+
+express()
+  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
