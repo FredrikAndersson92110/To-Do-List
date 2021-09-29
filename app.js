@@ -134,7 +134,6 @@ app.post("/delete", (req, res) => {
 //     console.log("Server has started succesfully"); 
 // });
 
-const PORT = process.env.PORT || 3000;
-
-express()
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+  app.listen(process.env.PORT || 3000, () => {
+    console.log("The server is running on port 3000.")
+})
